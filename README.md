@@ -1,67 +1,78 @@
-# 🛒 Serverless E-Commerce on AWS (Cognito + API Gateway + Lambda + DynamoDB)
+# 🛒 Serverless E-Commerce App (AWS)
 
 ## 🚀 Overview
 
-This project is a **fully serverless e-commerce web app** built on AWS using:
-
-* Amazon S3 → Frontend hosting
-* Amazon CloudFront → CDN + HTTPS
-* Amazon API Gateway → REST APIs
-* AWS Lambda → Backend logic
-* Amazon DynamoDB → Database
-* Amazon Cognito → Authentication
+This project is a **fully serverless e-commerce application** built using AWS services.
+It supports authentication, product browsing, cart management, and order placement — all without managing servers.
 
 ---
 
-# 📦 Features
+# 🧱 Tech Stack
 
-* User authentication (Signup/Login)
-* Product listing
-* Add to cart / remove / clear cart
-* Place order
-* Per-user order history (isolated via Cognito)
-* Serverless architecture (no servers)
+* Amazon S3 — Frontend hosting
+* Amazon CloudFront — CDN + HTTPS
+* Amazon API Gateway — REST APIs
+* AWS Lambda — Backend logic
+* Amazon DynamoDB — Database (single-table design)
+* Amazon Cognito — Authentication (JWT-based)
 
 ---
 
-# 🏗️ Architecture Flow
+# ✨ Features
+
+* 🔐 User authentication (Signup / Login)
+* 🛍️ Product listing with stock
+* 🛒 Add to cart / remove / clear cart
+* 📦 Place order (transaction-safe)
+* 👤 User-specific cart & orders (multi-user isolation)
+* ⚡ Fully serverless (auto-scalable)
+
+---
+
+# 🏗️ Architecture
 
 ```text
-Frontend (S3 + CloudFront)
+CloudFront (Frontend)
         ↓
 API Gateway (JWT Authorizer)
         ↓
 Lambda Functions
         ↓
-DynamoDB (Single Table Design)
+DynamoDB (Single Table)
 ```
 
 ---
 
-# ⚙️ SETUP GUIDE (STEP-BY-STEP)
+# 🧩 Database Design (Single Table)
+
+Table: `EcommerceTable`
+
+| PK         | SK        | Description     |
+| ---------- | --------- | --------------- |
+| PRODUCT#id | INFO      | Product details |
+| PRODUCT#id | INVENTORY | Stock           |
+| USER#id    | CART#id   | Cart items      |
+| USER#id    | ORDER#id  | Orders          |
 
 ---
 
-## 🔹 1. Create DynamoDB Table
+# ⚙️ Setup Guide
 
-Go to:
-👉 Amazon DynamoDB
+---
+
+## 🔹 1. DynamoDB Setup
 
 Create table:
 
 ```text
 Table Name: EcommerceTable
-Partition Key (PK): String
-Sort Key (SK): String
+Partition Key: PK (String)
+Sort Key: SK (String)
 ```
 
 ---
 
-## 🔹 2. Insert Sample Products
-
-Each product needs **2 entries**:
-
-### Product INFO
+### Insert Sample Product
 
 ```json
 {
@@ -73,8 +84,6 @@ Each product needs **2 entries**:
 }
 ```
 
-### Product INVENTORY
-
 ```json
 {
   "PK": "PRODUCT#p1",
@@ -85,46 +94,24 @@ Each product needs **2 entries**:
 
 ---
 
-## 🔹 3. Setup Cognito
+## 🔹 2. Cognito Setup
 
-Go to:
-👉 Amazon Cognito
+Using Amazon Cognito:
 
-### Create User Pool
-
-* Enable email login
-* Create App Client (NO secret)
-
----
+* Create User Pool
+* Create App Client (no secret)
 
 ### Configure Login Pages
 
 * OAuth Flow → ✅ Implicit grant
 * Scopes → `openid`, `email`
-* Callback URL:
-
-```text
-https://your-cloudfront-url/
-```
+* Callback URL → your CloudFront URL
 
 ---
 
-### Create Domain
+## 🔹 3. API Gateway Setup
 
-Example:
-
-```text
-https://yourdomain.auth.us-east-1.amazoncognito.com
-```
-
----
-
-## 🔹 4. Setup API Gateway
-
-Go to:
-👉 Amazon API Gateway
-
----
+Using Amazon API Gateway:
 
 ### Create HTTP API
 
@@ -132,57 +119,23 @@ Go to:
 
 ### Create JWT Authorizer
 
-* Issuer:
+* **Issuer**
 
-```text
-https://cognito-idp.us-east-1.amazonaws.com/YOUR_POOL_ID
+```
+https://cognito-idp.<region>.amazonaws.com/<user_pool_id>
 ```
 
-* Audience:
+* **Audience**
 
-```text
-YOUR_CLIENT_ID
+```
+<client_id>
 ```
 
 ---
 
-## 🔹 5. Create Lambda Functions
+### Attach Authorizer to Routes
 
-Go to:
-👉 AWS Lambda
-
----
-
-### Required APIs
-
-| API            | Purpose         |
-| -------------- | --------------- |
-| `/products`    | Get products    |
-| `/cart/add`    | Add item        |
-| `/cart/manage` | Remove/clear    |
-| `/order/place` | Place order     |
-| `/orders`      | Get user orders |
-
----
-
-### IMPORTANT
-
-In ALL secured Lambdas:
-
-```javascript
-const user = event.requestContext.authorizer.jwt.claims;
-const userId = user.sub;
 ```
-
-❌ Never take `userId` from frontend
-
----
-
-## 🔹 6. Attach Authorizer
-
-Attach JWT Authorizer to:
-
-```text
 /cart/add
 /cart/manage
 /order/place
@@ -191,55 +144,77 @@ Attach JWT Authorizer to:
 
 ---
 
-## 🔹 7. Deploy API
+## 🔹 4. Lambda Functions
 
-Click:
+Using AWS Lambda
+
+---
+
+### Required APIs
+
+| Endpoint       | Description         |
+| -------------- | ------------------- |
+| `/products`    | Fetch all products  |
+| `/cart/add`    | Add to cart         |
+| `/cart/manage` | Remove / clear cart |
+| `/order/place` | Place order         |
+| `/orders`      | Get user orders     |
+
+---
+
+### 🔐 Authentication Rule
+
+In all protected Lambdas:
+
+```javascript
+const user = event.requestContext?.authorizer?.jwt?.claims;
+const userId = user?.sub;
+```
+
+❌ Never trust frontend userId
+✅ Always use JWT
+
+---
+
+## 🔹 5. Environment Variables
+
+Create `.env` (DO NOT COMMIT):
 
 ```text
-Deploy API
+TABLE_NAME=EcommerceTable
+```
+
+Create `.env.example`:
+
+```text
+TABLE_NAME=EcommerceTable
 ```
 
 ---
 
-## 🔹 8. Setup Frontend Hosting
+## 🔹 6. Frontend Setup
 
-Upload frontend to:
-👉 Amazon S3
-
-Enable:
-
-* Static website hosting
+Host on Amazon S3
+Serve via Amazon CloudFront
 
 ---
-
-## 🔹 9. Setup CloudFront
-
-Use:
-👉 Amazon CloudFront
-
-* Origin → S3 bucket
-* Enable HTTPS
-
----
-
-## 🔹 10. Configure Frontend Auth
 
 ### Login Function
 
 ```javascript
 function login() {
   window.location.href =
-    "https://YOUR_DOMAIN.auth.us-east-1.amazoncognito.com/login" +
-    "?client_id=YOUR_CLIENT_ID" +
+    "https://<your-domain>.auth.<region>.amazoncognito.com/login" +
+    "?client_id=<client_id>" +
     "&response_type=token" +
     "&scope=email+openid" +
-    "&redirect_uri=YOUR_CLOUDFRONT_URL";
+    "&redirect_uri=<cloudfront_url>";
 }
 ```
 
 ---
 
-### Handle Token
+### Token Handling
 
 ```javascript
 function handleAuth() {
@@ -257,7 +232,7 @@ function handleAuth() {
 
 ---
 
-### API Call with Token
+### API Call with Auth
 
 ```javascript
 fetch(API_URL, {
@@ -269,14 +244,6 @@ fetch(API_URL, {
 
 ---
 
-# 🔐 Security Notes
-
-* Never trust frontend `userId`
-* Always use Cognito JWT (`sub`)
-* Protect APIs with JWT authorizer
-
----
-
 # 🧪 Testing Checklist
 
 * [ ] Login works
@@ -285,38 +252,48 @@ fetch(API_URL, {
 * [ ] Different users see different carts
 * [ ] Orders stored per user
 * [ ] Order history is user-specific
+* [ ] Stock updates correctly
 
 ---
 
 # 🚫 Common Mistakes
 
 * ❌ Wrong client_id in frontend
-* ❌ Missing JWT authorizer
+* ❌ JWT authorizer not attached
 * ❌ Using localStorage for orders
 * ❌ Missing `GSI1PK` in products
 * ❌ Not deploying API after changes
+* ❌ Not sending Authorization header
+
+---
+
+# 🔐 Security Notes
+
+* Never expose credentials
+* Never trust frontend data
+* Always validate JWT
+* Use environment variables
 
 ---
 
 # 🚀 Future Improvements
 
-* Admin panel for product management
-* Payment integration
+* Admin panel (add/edit products)
 * Product images
+* Payment gateway integration
+* Order status tracking
 * Search & filtering
-* Inventory auto-sync
 
 ---
 
-# 🧠 Final Note
+# 🧠 Final Insight
 
 This project demonstrates:
 
 ```text
-Real-world scalable serverless architecture
+Production-level serverless architecture with real authentication and data isolation
 ```
 
-👉 You are NOT building a demo
-👉 You are building a **production-ready backend system**
+👉 Not a demo — a **real scalable backend system**
 
 ---
