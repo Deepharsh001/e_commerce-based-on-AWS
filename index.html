@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Cart</title>
+  <style>
+    :root{--bg:#08111f;--bg2:#142540;--card:rgba(10,18,34,.72);--line:rgba(255,255,255,.12);--text:#eef4ff;--muted:#9eb1cf;--brand:#6ae3c6;--brand2:#189781;--danger:#ff8795;--warn:#ffd36e;--ok:#85f0aa;--shadow:0 18px 50px rgba(0,0,0,.35);--r:24px;--r2:16px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at top left,rgba(106,227,198,.2),transparent 28%),radial-gradient(circle at top right,rgba(86,122,255,.18),transparent 28%),linear-gradient(140deg,var(--bg),#050912 66%)}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(#000,transparent 86%)}
+    .wrap{width:min(1180px,calc(100% - 28px));margin:auto;padding:28px 0 48px}
+    .glass{border:1px solid var(--line);background:var(--card);backdrop-filter:blur(18px);box-shadow:var(--shadow);border-radius:var(--r)}
+    .hero{padding:28px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-90px;top:-120px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(106,227,198,.34),transparent 66%)}
+    .tag{display:inline-flex;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--brand);font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}
+    h1,h2,h3,p{margin:0}h1{font-size:clamp(2.2rem,5vw,4.1rem);line-height:1;max-width:11ch}.sub{max-width:62ch;color:var(--muted);margin-top:14px;line-height:1.7}
+    .stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}.stat{min-width:130px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.stat b{display:block;font-size:1.25rem}.stat span{color:var(--muted);font-size:.9rem}
+    .grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(320px,.95fr);gap:22px;margin-top:22px}.stack{display:grid;gap:22px}.panel{padding:22px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.head p{margin-top:6px;color:var(--muted);font-size:.94rem}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:.82rem}.pill:before,.pulse:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 0 rgba(106,227,198,.6);animation:pulse 1.6s infinite}
+    .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.card{display:grid;gap:14px;padding:18px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));transform:translateY(10px);opacity:0;animation:in .45s ease forwards;transition:.18s ease}.card:hover{transform:translateY(-4px);border-color:rgba(106,227,198,.45);box-shadow:0 14px 34px rgba(0,0,0,.22)}.card.changed{animation:flash 1s ease}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.sku,.stock{width:max-content;padding:7px 10px;border-radius:999px;font-size:.8rem;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.06)}.sku{color:var(--brand);border-color:rgba(106,227,198,.22);background:rgba(106,227,198,.12)}.stock.low{color:var(--warn);background:rgba(255,211,110,.12);border-color:rgba(255,211,110,.24)}.stock.good{color:var(--ok);background:rgba(133,240,170,.12);border-color:rgba(133,240,170,.22)}
+    .price{font-size:1.45rem;font-weight:700}.meta{display:grid;gap:8px;color:var(--muted);font-size:.93rem}
+    .list,.orders{display:grid;gap:12px}.item,.order{padding:16px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.row.start{align-items:flex-start}.qty{padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.07)}small,.muted,.history{color:var(--muted)}
+    .summary{display:grid;gap:12px;padding:18px;border-radius:20px;background:linear-gradient(135deg,rgba(106,227,198,.14),rgba(7,15,28,.65));border:1px solid rgba(106,227,198,.18)}.summary .row b{font-size:1.3rem}
+    .state{padding:26px 16px;text-align:center;border-radius:20px;border:1px dashed rgba(255,255,255,.14);background:rgba(255,255,255,.04)}.state b{display:block;margin-bottom:8px}
+    .success{display:none;padding:14px 16px;border-radius:16px;border:1px solid rgba(133,240,170,.28);background:rgba(133,240,170,.12);color:#e0ffea}.success.show{display:block;animation:up .3s ease}
+    .history{display:grid;gap:6px;margin-top:10px;font-size:.93rem}
+    .btns{display:flex;flex-wrap:wrap;gap:12px}.btn{border:0;border-radius:14px;padding:12px 16px;font:inherit;color:var(--text);cursor:pointer;transition:.18s ease}.btn:hover:not(:disabled){transform:translateY(-1px)}.btn:disabled{opacity:.56;cursor:not-allowed}.primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#04231d;font-weight:700}.secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}.danger{background:rgba(255,135,149,.14);border:1px solid rgba(255,135,149,.22);color:#ffd8de}
+    .toastWrap{position:fixed;right:18px;bottom:18px;z-index:30;display:grid;gap:12px;width:min(360px,calc(100% - 32px))}.toast{padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(8,15,28,.92);backdrop-filter:blur(16px);box-shadow:var(--shadow);animation:up .28s ease}.toast.ok{border-color:rgba(133,240,170,.24)}.toast.err{border-color:rgba(255,135,149,.28)}
+    .spin{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.24);border-top-color:currentColor;animation:spin .8s linear infinite}.inline{display:inline-flex;align-items:center;gap:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,227,198,.65)}70%{box-shadow:0 0 0 10px rgba(106,227,198,0)}100%{box-shadow:0 0 0 0 rgba(106,227,198,0)}}@keyframes in{from{transform:translateY(14px) scale(.98);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}@keyframes flash{40%{box-shadow:0 0 0 8px rgba(255,211,110,.16)}}@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    @media (max-width:920px){.grid{grid-template-columns:1fr}.hero,.panel{padding:20px}}@media (max-width:640px){.wrap{width:min(100% - 18px,1180px);padding-top:18px}.head,.row{flex-direction:column;align-items:flex-start}.btns{flex-direction:column}.btn{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="glass hero">
+      <div id="authBar" style="position:absolute;top:20px;right:20px;display:flex;align-items:center;gap:10px;z-index:1000;"></div>
+      <span class="tag">Live Storefront</span>
+      <h1>Modern shopping in one clean screen.</h1>
+      <p class="sub">Browse live products, add items through the API, place an order, and keep a local order history in a polished single-page mini storefront.</p>
+      <div class="stats">
+        <div class="stat"><b id="productCount">0</b><span>Products live</span></div>
+        <div class="stat"><b id="cartCount">0</b><span>Items in cart</span></div>
+        <div class="stat"><b id="orderCount">0</b><span>Past orders</span></div>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="stack">
+        <section class="glass panel">
+          <div class="head">
+            <div><h2>Product List</h2><p>Live inventory refreshes every 5 seconds.</p></div>
+            <div class="pill" id="syncStatus">Waiting for next sync</div>
+          </div>
+          <div id="products"></div>
+        </section>
+        <section class="glass panel">
+          <div class="head"><div><h2>Order History</h2><p>Saved locally after successful checkout.</p></div></div>
+          <div id="history"></div>
+        </section>
+      </div>
+      <div class="stack">
+        <section class="glass panel">
+          <div class="head"><div><h2>Cart</h2><p>Remove items or clear the full cart.</p></div></div>
+          <div id="cart"></div>
+        </section>
+        <section class="glass panel">
+          <div class="head"><div><h2>Order</h2><p>Submit your current cart through the API.</p></div></div>
+          <div class="summary">
+            <div class="row"><span>Current total</span><b id="total">Rs 0.00</b></div>
+            <div class="muted" id="summaryText">No items selected yet.</div>
+          </div>
+          <div style="height:14px"></div>
+          <button class="btn primary" id="placeBtn" type="button">Place Order</button>
+          <div style="height:14px"></div>
+          <div class="success" id="success"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div class="toastWrap" id="toasts" aria-live="polite"></div>
+  <script>
+    const AUTH_DOMAIN = "your-domain.auth.region.amazoncognito.com";
+    const CLIENT_ID = "your_cognito_app_client_id";
+    const REDIRECT_URI = "https://your-app.example.com/";
+    const API = "https://your-api-id.execute-api.region.amazonaws.com";
+    const STORE_KEY = "mini-ecommerce-orders";
+    const REFRESH_MS = 5000;
+
+    function handleAuth() {
+      const hash = window.location.hash;
+
+      if (hash.includes("id_token")) {
+        const params = new URLSearchParams(hash.substring(1));
+        const token = params.get("id_token");
+
+        localStorage.setItem("token", token);
+
+        window.location.hash = "";
+      }
+
+      renderAuth();
+    }
+    
+
+   function login() {
+  window.location.href =
+    `https://${AUTH_DOMAIN}/login` +
+    `?client_id=${encodeURIComponent(CLIENT_ID)}` +
+    "&response_type=token" +
+    "&scope=email+openid" +
+    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+}
+
+    function logout() {
+  localStorage.removeItem("token");
+
+  window.location.href =
+    `https://${AUTH_DOMAIN}/logout` +
+    `?client_id=${encodeURIComponent(CLIENT_ID)}` +
+    `&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
+}
+
+    function parseJwt(token) {
+      try {
+        const payload = token.split(".")[1];
+        const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+        return JSON.parse(decoded);
+      } catch (e) {
+        console.error("JWT parse error:", e);
+        return null;
+      }
+    }
+
+    function getUser() {
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+
+      const data = parseJwt(token);
+      if (!data) return null;
+
+      console.log("USER DATA:", data);
+
+      return {
+        name: data.name || data.email || data.preferred_username || data["cognito:username"] || "User",
+        sub: data.sub
+      };
+    }
+
+    function renderAuth() {
+      const token = localStorage.getItem("token");
+      const bar = document.getElementById("authBar");
+
+      if (!bar) return;
+
+      if (token) {
+        const user = getUser();
+
+        if (!user) {
+          bar.innerHTML = `<button class="btn secondary" onclick="login()">Login</button>`;
+          return;
+        }
+
+        bar.innerHTML = `
+          <span style="padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);">${esc(user.name)}</span>
+          <button class="btn secondary" onclick="logout()">Logout</button>
+        `;
+      } else {
+        bar.innerHTML = `
+          <button class="btn secondary" onclick="login()">Login</button>
+        `;
+      }
+    }
+
+    const $=id=>document.getElementById(id);
+    const state={products:[],cart:[],orders:loadOrders(),loading:false,error:"",placing:false,pending:new Set(),highlights:new Set(),stockMap:new Map()};
+
+    function loadOrders(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||"[]")}catch{return[]}}
+    function saveOrders(){localStorage.setItem(STORE_KEY,JSON.stringify(state.orders))}
+    function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+    function money(v){return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(Number(v||0))}
+    function attr(v){
+      if(v==null)return undefined;
+      if(typeof v!=="object"||Array.isArray(v))return v;
+      if("S"in v)return v.S;
+      if("N"in v)return Number(v.N);
+      if("BOOL"in v)return Boolean(v.BOOL);
+      if("NULL"in v)return undefined;
+      if("M"in v)return v.M;
+      if("L"in v)return v.L.map(attr);
+      return v;
+    }
+    function asString(v,fb=""){const x=attr(v);if(x==null)return fb;return String(x)}
+    function asNumber(v,fb=0){const x=attr(v);const n=Number(x);return Number.isFinite(n)?n:fb}
+    function pid(p){
+      const direct=asString(p?.id||p?.productId,"").trim();
+      if(direct)return direct;
+      const pk=asString(p?.PK||p?.pk,"").trim();
+      if(pk.includes("#"))return pk.split("#")[1]||"";
+      return pk;
+    }
+    function stock(p){
+      const raw=p?.stock??p?.quantity??p?.inventory??p?.availableStock;
+      return asNumber(raw,0);
+    }
+    function normalize(data){
+      const root=Array.isArray(data)?data:Array.isArray(data?.value)?data.value:Array.isArray(data?.Items)?data.Items:[];
+      return root.map((x,index)=>{
+        const id=pid(x);
+        return{
+          id:id?String(id):"",
+          name:asString(x?.name,`Product ${index+1}`)||`Product ${index+1}`,
+          price:asNumber(x?.price,0),
+          stock:stock(x)
+        };
+      });
+    }
+    async function apiFetch(path,options={}){
+      const token=localStorage.getItem("token");
+      const config={
+        method:options.method||"GET",
+        mode:"cors",
+        cache:"no-store",
+        headers:{
+          "Accept":"application/json",
+          ...(options.method&&options.method!=="GET"?{"Content-Type":"application/json"}:{}),
+          ...(token?{"Authorization":`Bearer ${token}`}:{ }),
+          ...(options.headers||{})
+        }
+      };
+      if(options.body!==undefined)config.body=typeof options.body==="string"?options.body:JSON.stringify(options.body);
+      let response;
+      try{
+        response=await fetch(`${API}${path}`,config);
+      }catch(error){
+        console.error(`Network/CORS error for ${path}:`,error);
+        throw new Error("Unable to reach the API. Check CORS or network connectivity.");
+      }
+      const text=await response.text();
+      let data=null;
+      try{data=text?JSON.parse(text):null}catch{data=text}
+      console.log(`API ${config.method} ${path}:`,{status:response.status,ok:response.ok,data});
+      if(!response.ok)throw new Error(`Request failed with status ${response.status}`);
+      return data;
+    }
+    function itemCount(){return state.cart.reduce((a,b)=>a+b.quantity,0)}
+    function total(){return state.cart.reduce((a,b)=>a+b.price*b.quantity,0)}
+    function toast(msg,type="ok"){const el=document.createElement("div");el.className=`toast ${type}`;el.innerHTML=`<b>${type==="err"?"Something went wrong":"Update"}</b><div>${esc(msg)}</div>`;$("toasts").appendChild(el);setTimeout(()=>{el.style.opacity="0";el.style.transform="translateY(8px)";setTimeout(()=>el.remove(),220)},2600)}
+    function syncStatus(text,loading=false){$("syncStatus").innerHTML=loading?`<span class="inline"><span class="spin"></span>${esc(text)}</span>`:esc(text)}
+    function stats(){$("productCount").textContent=state.products.length;$("cartCount").textContent=itemCount();$("orderCount").textContent=state.orders.length;$("total").textContent=money(total());$("summaryText").textContent=state.cart.length?`${itemCount()} item(s) ready for checkout`:"No items selected yet."}
+
+    function renderProducts(){
+      if(state.loading&&!state.products.length){$("products").innerHTML=`<div class="state"><b>Loading products</b><p>Pulling live inventory from the API...</p></div>`;return}
+      if(state.error&&!state.products.length){$("products").innerHTML=`<div class="state"><b>Unable to load products</b><p>${esc(state.error)}</p></div>`;return}
+      if(!state.products.length){$("products").innerHTML=`<div class="state"><b>No products available</b><p>Once the API returns inventory, products will appear here.</p></div>`;return}
+      const banner=state.error?`<div class="state" style="margin-bottom:16px"><b>Refresh failed</b><p>${esc(state.error)}</p></div>`:"";
+      $("products").innerHTML=banner+`<div class="products">${state.products.map((p,i)=>{const c=p.stock<=3?"low":"good";const t=`${p.stock} in stock`;const busy=state.pending.has(p.id);const hi=state.highlights.has(p.id)?"changed":"";return `<article class="card ${hi}" style="animation-delay:${i*60}ms"><div class="top"><span class="sku">SKU ${esc(p.id||"N/A")}</span><span class="price">${money(p.price)}</span></div><div class="meta"><h3>${esc(p.name||"Unnamed Product")}</h3><span class="stock ${c}">${esc(t)}</span>${state.highlights.has(p.id)?"<small>Stock updated just now</small>":""}</div><button class="btn primary" data-add="${esc(String(p.id||""))}" ${busy||!p.id?"disabled":""}>${busy?'<span class="inline"><span class="spin"></span>Adding...</span>':!p.id?"Unavailable":"Add to Cart"}</button></article>`}).join("")}</div>`;
+      $("products").querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>addToCart(b.dataset.add)));
+    }
+
+    function renderCart(){
+      if(!state.cart.length){$("cart").innerHTML=`<div class="state"><b>Your cart is empty</b><p>Add products from the live list to start an order.</p></div>`;stats();orderButton();return}
+      $("cart").innerHTML=`<div class="list">${state.cart.map(i=>`<div class="item"><div class="row start"><div><h3>${esc(i.name)}</h3><small>${money(i.price)} each</small></div><span class="qty">Qty ${i.quantity}</span></div><div class="row" style="margin-top:10px"><b>${money(i.price*i.quantity)}</b><button class="btn danger" data-remove="${esc(i.id)}">Remove item</button></div></div>`).join("")}</div><div class="btns" style="margin-top:16px"><button class="btn secondary" id="clearBtn">Clear cart</button></div>`;
+      $("cart").querySelectorAll("[data-remove]").forEach(b=>b.addEventListener("click",()=>removeFromCart(b.dataset.remove)));
+      $("clearBtn").addEventListener("click",clearCart);stats();orderButton();
+    }
+
+    function renderHistory(){
+      if(!state.orders.length){$("history").innerHTML=`<div class="state"><b>No orders yet</b><p>Placed orders will appear here with their IDs and line items.</p></div>`;stats();return}
+      $("history").innerHTML=`<div class="orders">${state.orders.map(o=>`<article class="order"><div class="row start"><div><h3>Order #${esc(o.orderId)}</h3><small>${esc(o.createdAt)}</small></div><b>${money(o.total)}</b></div><div class="history">${o.items.map(i=>`<span>${esc(i.name)} x ${i.quantity}</span>`).join("")}</div></article>`).join("")}</div>`;stats();
+    }
+
+    function orderButton(){const d=state.placing||!state.cart.length;$("placeBtn").disabled=d;$("placeBtn").innerHTML=state.placing?'<span class="inline"><span class="spin"></span>Placing order...</span>':"Place Order"}
+    function addLocal(id){const p=state.products.find(x=>x.id===id);if(!p){toast("Product is no longer available.","err");return}const cur=state.cart.find(x=>x.id===id);if(cur)cur.quantity+=1;else state.cart.push({id:p.id,name:p.name,price:p.price,quantity:1});renderCart()}
+    async function removeFromCart(id){
+      try{
+        await apiFetch("/cart/manage",{
+          method:"POST",
+          body:{
+            action:"remove",
+            productId:id
+          }
+        });
+
+        state.cart = state.cart.filter(x=>x.id!==id);
+        renderCart();
+        toast("Item removed from cart.");
+      }catch(e){
+        toast("Failed to remove item","err");
+      }
+    }
+
+    async function clearCart(){
+      try{
+        await apiFetch("/cart/manage",{
+          method:"POST",
+          body:{
+            action:"clear"
+          }
+        });
+
+        state.cart = [];
+        renderCart();
+        toast("Cart cleared.");
+      }catch(e){
+        toast("Failed to clear cart","err");
+      }
+    }
+
+    async function addToCart(id){
+      const productId=String(id||"").trim();
+      if(!productId||state.pending.has(productId))return;
+      state.pending.add(productId);renderProducts();
+      try{
+        const data=await apiFetch("/cart/add",{method:"POST",body:{productId,quantity:1}});
+        addLocal(productId);toast(data?.message||"Item added to cart.");
+      }catch(e){console.error("Add to cart failed:",e);toast(e.message||"Could not add the item right now. Please try again.","err")}
+      finally{state.pending.delete(productId);renderProducts()}
+    }
+
+    async function placeOrder(){
+      if(!state.cart.length||state.placing)return;
+      state.placing=true;$("success").classList.remove("show");orderButton();
+      try{
+        const data=await apiFetch("/order/place",{method:"POST",body:{}});
+        const order={orderId:data?.orderId||Date.now(),createdAt:new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"}),total:total(),items:state.cart.map(i=>({id:i.id,name:i.name,quantity:i.quantity}))};
+        state.orders.unshift(order);saveOrders();state.cart=[];renderCart();renderHistory();
+        $("success").innerHTML=`Order placed successfully. Your order ID is <b>#${esc(order.orderId)}</b>.`;$("success").classList.add("show");toast(`Order #${order.orderId} placed successfully.`);
+        await loadProducts(false);
+      }catch(e){console.error("Order placement failed:",e);toast(e.message||"Order placement failed. Please try again.","err")}
+      finally{state.placing=false;orderButton()}
+    }
+
+    function trackStock(next){
+      const changed=new Set(),map=new Map();
+      next.forEach(p=>{map.set(p.id,p.stock);const prev=state.stockMap.get(p.id);if(prev!==undefined&&prev!==null&&p.stock!==null&&prev!==p.stock)changed.add(p.id)});
+      state.stockMap=map;state.highlights=changed;
+      if(changed.size)setTimeout(()=>{state.highlights.clear();renderProducts()},1500);
+    }
+
+    async function loadProducts(showLoader=true){
+      state.loading=showLoader;state.error="";syncStatus(showLoader?"Syncing live products...":"Refreshing inventory...",true);renderProducts();
+      try{
+        const data=await apiFetch("/products");
+        const products=normalize(data);trackStock(products);state.products=products;
+        syncStatus(`Last synced at ${new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}`);
+      }catch(e){console.error("Product fetch failed:",e);state.error=e.message||"The live product feed is temporarily unavailable.";syncStatus("Refresh failed");toast(state.error,"err")}
+      finally{state.loading=false;renderProducts();stats()}
+    }
+
+    $("placeBtn").addEventListener("click",placeOrder);
+    handleAuth();renderAuth();renderProducts();renderCart();renderHistory();stats();orderButton();loadProducts(true);setInterval(()=>loadProducts(false),REFRESH_MS);
+  </script>
+</body>
+</html>
